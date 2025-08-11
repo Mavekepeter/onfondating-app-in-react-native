@@ -2,6 +2,7 @@ import { View, Text } from 'react-native'
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage"
 export interface ColorScheme {
+  accent: ColorValue | undefined;
   bg: string;
   surface: string;
   text: string;
@@ -68,6 +69,7 @@ const darkColors: ColorScheme = {
   warning: "#fbbf24",
   danger: "#f87171",
   shadow: "#000000",
+  accent: '#6c5ce7',
   gradients: {
     background: ["#0f172a", "#1e293b"],
     surface: ["#1e293b", "#334155"],

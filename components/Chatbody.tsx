@@ -1,16 +1,15 @@
+import { createHomeStyles } from '@/assets/styles/home.styles';
+import useTheme from '@/hooks/useTheme';
+import axios from 'axios';
 import React, { useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import axios from 'axios';
-import useTheme from '@/hooks/useTheme';
-import { createHomeStyles } from '@/assets/styles/home.styles';
-import { API_BASE_URL } from '@/utils/config';
 
 type Message = {
   from: 'me' | 'other';
@@ -40,83 +39,75 @@ const ChatBody: React.FC = () => {
     setMessages(prev => [...prev, { from, text }]);
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    const phone = formData.phone;
-    const values = formData.combined.split('#').map(v => v.trim());
-    let url = '';
-    let payload: Record<string, any> = { phone };
+ const API_BASE_URL = "https://f052e4ef1a19.ngrok-free.app";
 
-    try {
-      switch (formType) {
-        case 'register':
-          url = `${API_BASE_URL}/register`;
-          payload = {
-            phone,
-            name: values[0],
-            age: values[1],
-            gender: values[2],
-            county: values[3],
-            town: values[4],
-          };
-          break;
-        case 'details':
-          url = `${API_BASE_URL}/details`;
-          payload = {
-            phone,
-            education: values[0],
-            profession: values[1],
-            marital_status: values[2],
-            religion: values[3],
-            ethnicity: values[4],
-          };
-          break;
-        case 'description':
-          url = `${API_BASE_URL}/description`;
-          payload = {
-            phone,
-            description: values[0],
-          };
-          break;
-        case 'match':
-          url = `${API_BASE_URL}/match`;
-          payload = {
-            phone,
-            age_range: values[0],
-            town: values[1],
-          };
-          break;
-        case 'interest':
-          url = `${API_BASE_URL}/interest`;
-          payload = {
-            phone,
-            interests: values[0],
-          };
-          break;
-        default:
-          return;
-      }
+const handleSubmit = async () => {
+  setLoading(true);
+  const phone = formData.phone;
+  const values = formData.combined.split('#').map(v => v.trim());
+  let url = '';
+  let payload: Record<string, any> = { phone };
 
-      const res = await axios.post(url, payload);
-
-      if (formType === 'match') {
-        const matchList = res.data.matches?.map(
-          (m: any) => `${m.name}, Age: ${m.age}, Phone: ${m.phone}`
-        ).join('\n') || 'No matches found.';
-        addMessage('other', matchList);
-      } else {
-        addMessage('other', res.data.message);
-      }
-    } catch (err) {
-      addMessage('other', 'An error occurred. Check your internet connectivity ');
-      console.log(err);
-      
-    } finally {
-      setLoading(false);
-      setFormType(null);
-      setFormData({ ...formData, combined: '' });
+  try {
+    switch (formType) {
+      case 'register':
+        url = `${API_BASE_URL}/register`;
+        payload = {
+          phone,
+          name: values[0],
+          age: values[1],
+          gender: values[2],
+          county: values[3],
+          town: values[4],
+        };
+        break;
+      case 'details':
+        url = `${API_BASE_URL}/details`;
+        payload = {
+          phone,
+          education: values[0],
+          profession: values[1],
+          marital_status: values[2],
+          religion: values[3],
+          ethnicity: values[4],
+        };
+        break;
+      case 'description':
+        url = `${API_BASE_URL}/description`;
+        payload = { phone, description: values[0] };
+        break;
+      case 'match':
+        url = `${API_BASE_URL}/match`;
+        payload = { phone, age_range: values[0], town: values[1] };
+        break;
+      case 'interest':
+        url = `${API_BASE_URL}/interest`;
+        payload = { phone, interests: values[0] };
+        break;
+      default:
+        return;
     }
-  };
+
+    const res = await axios.post(url, payload);
+
+    if (formType === 'match') {
+      const matchList = res.data.matches?.map(
+        (m: any) => `${m.name}, Age: ${m.age}, Phone: ${m.phone}`
+      ).join('\n') || 'No matches found.';
+      addMessage('other', matchList);
+    } else {
+      addMessage('other', res.data.message);
+    }
+  } catch (err) {
+    addMessage('other', 'An error occurred. Check your internet connectivity.');
+    console.error(err);
+  } finally {
+    setLoading(false);
+    setFormType(null);
+    setFormData({ ...formData, combined: '' });
+  }
+};
+
 
   const getPlaceholder = (): string => {
     switch (formType) {
